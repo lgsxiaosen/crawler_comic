@@ -45,17 +45,28 @@ class COMIC(object):
         :param request_url:
         :return:
         """
-        first_url = request_url + "/comic/15/2369.html"
+        first_url = request_url + "/comic/15.html"
         next_page_url = first_url
         j = 1
-        while(True):
+        soup_contents = self.get_soup(next_page_url)
+        contents_list = soup_contents.find(class_="list_block show")
+        li_list = contents_list.find_all("li")
+        size = len(li_list)
+        for li in li_list:
+            li_contents = li.contents[0]
+            href = li_contents["href"]
+            name = li_contents.text
+            print(name)
+            next_page_url = request_url + href
+        # while(True):
             soup = self.get_soup(next_page_url)
             # 文件名字
-            title = soup.find(class_="bo_tit")
-            file = title.contents[1].contents[1]
-            file = file.split(">")[1].strip()
-            print(file)
-            document_name = "/"+file+"/"
+            # title = soup.find(class_="bo_tit")
+            # file = title.contents[1].contents[1]
+            # file = file.split(">")[1].strip()
+            # print(file)
+            # document_name = "/"+file+"/"
+            document_name = "/" + name + "/"
             script_list = soup.find_all("script")
             for scrip in script_list:
                 scrip_string = scrip.string
@@ -71,20 +82,20 @@ class COMIC(object):
                     pic_url_list = eval(url_string_list)
                     # print(pic_url_list)
                     # 遍历下载图片
-                    i = 1
+                    i = 0
                     for pic_url in pic_url_list:
+                        i += 1
                         file_name = str(i) + ".jpg"
                         download_url = prefix_url + pic_url
                         self.download_pic(download_url, file_name, document_name)
                         print("第：{}章，第：{}张图片下载完成！".format(j, i))
-                        i += 1
-                    print("下载完成第：{}章，共：{}张图片！".format(j, i))
+                    print("下载完成，共{}章，第：{}章，共：{}张图片！".format(size, j, i))
                     break
             # 下一页
-            next_page = self.get_next_page(soup)
-            if next_page is None or first_url==(request_url + next_page):
-                break
-            next_page_url = request_url + next_page
+            # next_page = self.get_next_page(soup)
+            # if next_page is None or first_url==(request_url + next_page):
+            #     break
+            # next_page_url = request_url + next_page
             j += 1
             # if j>=4:
             #     break
